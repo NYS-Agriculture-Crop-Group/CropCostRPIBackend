@@ -20,3 +20,10 @@ class PostgresqlDB(object):
             cls.connect()
         else:
             return cls.connection.cursor(cursor_factory=DictCursor)
+
+    @classmethod
+    def get_connection(cls):
+        if cls.connection is None:
+            cls.connect()
+        else:
+            return cls.connection

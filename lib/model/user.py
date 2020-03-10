@@ -1,4 +1,5 @@
 from lib.model.database import PostgresqlDB
+import hashlib
 
 class UserModel(object):
 
@@ -28,13 +29,34 @@ class UserModel(object):
         cursor = PostgresqlDB.get_new_cursor()
         query = "SELECT * FROM users WHERE users.username = '{}';".format(username)
         cursor.execute(query)
-        if len(cursor.fetchall()) != 0:
+        exist_user = cursor.fetchone()
+        if exist_user != None:
             print("User already exists")
-            return None
+            return exist_user.get('user_id')
         else:
-            password_encoded = password
+            password_encoded = hashlib.sha256(password.encode('utf-8')).hexdigest()
+            rowcount = cursor.rowcount
             query = "INSERT INTO users VALUES(DEFAULT, '{}', '{}');".format(username, password_encoded)
             cursor.execute(query)
-            new_obj = cursor.findall()
-            print("New User Created",new_obj)
-            return new_obj
+            PostgresqlDB.get_connection().commit()
+            if cursor.rowcount-rowcount != 1:
+                print("Nothing was added")
+                return cursor.lastrowid
+            else:
+                return cursor.lastrowid
+
+    @staticmethod
+    def verifyPassword(user_id: int, password: str):
+        cursor = PostgresqlDB.get_new_cursor()
+        query = "SELECT * FROM users WHERE users.user_id={};".format(user_id)
+        cursor.execute(query)
+        user = cursor.fetchone()
+        if user is None:
+            print("Cant verify pasword, user does not exist with id {}".format(user_id))
+            return False
+        else:
+            password_hash = user.get('password')
+            if password_hash == hashlib.sha256(password.encode('utf-8')):
+                return True
+            else:
+                return False

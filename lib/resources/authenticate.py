@@ -13,20 +13,19 @@ class RegistationResource(Resource):
         auth = auth_b64
         (username, password,) = auth.split(':')
         print("Got username {} pasword {}".format(username, password))
-        new_user = UserModel.createUser(username, password)
-        print("New user", new_user)
-        if new_user is None:
+        new_user_id = UserModel.createUser(username, password)
+        print("New user", new_user_id)
+        if new_user_id is None:
             print("The User Exists")
             return {
                 "status": "Error",
                 "message": "A user with that name already exists"
             }
         else:
-            user_obj = UserModel.createUser(username, password)
-            new_token = Authenticator.generate_token(user_obj)
+            #user_obj = UserModel.createUser(username, password)
+            new_token = Authenticator.generate_token(new_user_id)
             resp = Response()
             resp.data = json.dumps({"status": "success"})
             resp.headers.add('JWT-Token', new_token)
-            return {
-                "status": "success"
-            }
+            resp.headers.add('Content-Type', "text/json")
+            return resp
