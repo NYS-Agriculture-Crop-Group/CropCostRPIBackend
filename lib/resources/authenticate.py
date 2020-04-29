@@ -16,6 +16,7 @@ class RegistationResource(Resource):
         # get the requested username and password in format base64(username:password)
         auth_b64 = request.headers.get('Authorization')
         auth = base64.b64decode(auth_b64)
+        auth = auth.decode()
         #auth = auth_b64
         # split the base 64 decoded string into username and password
         (username, password,) = auth.split(':')
@@ -33,21 +34,24 @@ class RegistationResource(Resource):
             }
         # create the requested user
         print("Got username {} pasword {}".format(username, password))
-        new_user_id = UserModel.createUser(username, password)
-        print("New user", new_user_id)
+        #new_user_id = UserModel.createUser(username, password)
+        
+        user=UserModel.getUserByUsernameAndPass(username,password)
         # check that the new user was created
-        if new_user_id is None:
+        if user is None:
             print("The User Exists")
             return {
                 "status": "Error",
                 "message": "A user with that name already exists"
             }
         else:
+            g.user_id = user[0]
+            new_user_id = str(user[0])
             # generate a JWT to allow the newly registered user to make resquests
             new_token = Authenticator.generate_token(new_user_id)
             # create response
             resp = Response()
-            resp.data = json.dumps({"status": "success"})
+            resp.data = json.dumps({"status": "success","userid":user[0]})
             resp.headers.add('JWT-Token', new_token)
             resp.headers.add('Content-Type', "text/json")
             return resp
