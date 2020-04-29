@@ -23,6 +23,13 @@ class UserModel(object):
         query = "SELECT * FROM users WHERE users.username = '{}';".format(username)
         cursor.execute(query)
         return cursor.fetchone()
+    
+    def getUserByUsernameAndPass(username: str, password: str):
+        password_encoded = hashlib.sha256(password.encode('utf-8')).hexdigest()
+        cursor = PostgresqlDB.get_new_cursor()
+        query = "SELECT * FROM users WHERE users.username = '{}' AND users.password='{}';".format(username, password_encoded)
+        cursor.execute(query)
+        return cursor.fetchone()
 
     @staticmethod
     def createUser(username: str, password: str):
