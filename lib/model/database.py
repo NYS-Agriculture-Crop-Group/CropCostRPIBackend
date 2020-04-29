@@ -31,18 +31,19 @@ class WrappedPostgresqlDB(object):
         username = os.getenv("POSTGRESUSER")
         password = os.getenv("POSTGRESPASS")
         print(username, password)
-        cls.connection = psycopg2.connect(user=username, password=password, database='cropcost')
+        cls.connection = psycopg2.connect(user="POSTGRESUSER", password="POSTGRESPASS", database='cropcost')
+        #cls.connection = psycopg2.connect(user=username, password=password, database='cropcost')
+        
+        return cls.connection.cursor()
 
     @classmethod
     def wrapped_get_new_cursor(cls):
         if cls.connection is None:
-            cls.connect()
-        else:
-            return cls.connection.cursor(cursor_factory=DictCursor)
+           cls.wrapped_connect()
+        return cls.connection.cursor(cursor_factory=DictCursor)
 
     @classmethod
     def wrapped_get_connection(cls):
         if cls.connection is None:
-            cls.connect()
-        else:
-            return cls.connection
+            cls.wrapped_connect()
+        return cls.connection.cursor(cursor_factory=DictCursor)
