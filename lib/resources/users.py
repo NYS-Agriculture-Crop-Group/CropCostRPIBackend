@@ -8,9 +8,12 @@ class UserResource(Resource):
     
     @Authenticator.auth_required
     def get(self):
-        user_id = g.id
+        user_id = request.args.get("userid")
         user = UserModel.getUserById(user_id)
         return user
-
+    
+    @Authenticator.auth_required
     def post(self):
-        return {"Message": "DepricitingAssetPost"}
+        user_id = request.args.post("userid")
+        user = UserModel.getUserById(user_id)
+        return user
